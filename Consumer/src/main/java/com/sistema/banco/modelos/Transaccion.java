@@ -9,7 +9,7 @@ public class Transaccion {
     public String moneda;
     public String cuentaOrigen;
     public String bancoDestino;
-    public Detalle detalle;
+    public Detalle detalle; 
     public String carnet; 
     public String correo;
 
