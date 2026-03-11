@@ -11,6 +11,7 @@ public class Transaccion {
     public String bancoDestino;
     public Detalle detalle;
     public String carnet; 
+    public String nombre;
     public String correo;
 
     @JsonIgnoreProperties(ignoreUnknown = true)

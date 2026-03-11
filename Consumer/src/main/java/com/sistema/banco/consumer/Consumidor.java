@@ -33,15 +33,22 @@ public class Consumidor {
                 String payload = new String(delivery.getBody(), StandardCharsets.UTF_8);
                 try {
                     Transaccion tx = mapper.readValue(payload, Transaccion.class);
+                    tx.idTransaccion = tx.idTransaccion + "-LESTERPAYES"; 
+                    tx.carnet = "0905-24-22750"; 
+                    tx.nombre = "Lester David Payes Méndez"; 
+                    tx.correo = "lpayesm@miumg.edu.gt";
                     
-                    if (postToApi(payload)) {
-                        System.out.println("[OK] Transacción " + tx.idTransaccion + " guardada.");
+                    String jsonModificado = mapper.writeValueAsString(tx);
+                    
+                    if (postToApi(jsonModificado)) {
+                        System.out.println("[OK] Transacción guardada para Lester: " + tx.idTransaccion);
+                        
                         channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                     } else {
-                        System.err.println("[FALLO] API no disponible. Mensaje sigue en cola.");
+                        System.err.println("[FALLO] API del ingeniero no respondió 200. El mensaje sigue en RabbitMQ.");
                     }
                 } catch (Exception ex) {
-                    System.err.println("Error: " + ex.getMessage());
+                    System.err.println("Error procesando mensaje: " + ex.getMessage());
                 }
             };
 
@@ -57,11 +64,15 @@ public class Consumidor {
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
+            
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            return response.statusCode() == 200;
+            
+            System.out.println("Respuesta del servidor: " + response.statusCode() + " -> " + response.body());
+            
+            return response.statusCode() == 200 || response.statusCode() == 201;
         } catch (Exception e) {
+            System.err.println("Error de conexión: " + e.getMessage());
             return false;
         }
-    }
-    
+    } 
 }
