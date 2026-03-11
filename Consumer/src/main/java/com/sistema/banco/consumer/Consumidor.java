@@ -43,7 +43,7 @@ public class Consumidor {
                     String jsonModificado = mapper.writeValueAsString(tx);
                     
                     if (postToApi(jsonModificado)) {
-                        System.out.println("[OK] Transacción guardada para Lester: " + tx.idTransaccion);
+                        System.out.println("[OK] Transaccion guardada para Lester: " + tx.idTransaccion);
                         
                         channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                     } else {
