@@ -9,6 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import com.sistema.banco.config.MyServerRabbit;
 
 public class Consumidor {
 
@@ -17,10 +18,8 @@ public class Consumidor {
     private static final HttpClient client = HttpClient.newHttpClient();
 
     public static void main(String[] args) throws Exception {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("127.0.0.1");
-        factory.setUsername("Lester");
-        factory.setPassword("124computadora123");
+    	
+    	ConnectionFactory factory = MyServerRabbit.getFactory();
 
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();

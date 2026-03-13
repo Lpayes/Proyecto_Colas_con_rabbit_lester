@@ -15,11 +15,8 @@ import java.net.http.HttpResponse;
 
 public class Productor {
 	public static void main(String[] args) {
-        ConnectionFactory factory = new ConnectionFactory();
+		ConnectionFactory factory = MyServerRabbit.getFactory();
 
-        factory.setHost("127.0.0.1");
-        factory.setUsername("Lester");
-        factory.setPassword("124computadora123");
 
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper mapper = new ObjectMapper();
