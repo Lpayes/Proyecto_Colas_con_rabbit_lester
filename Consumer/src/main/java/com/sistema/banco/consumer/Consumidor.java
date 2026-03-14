@@ -3,19 +3,15 @@ package com.sistema.banco.consumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 import com.sistema.banco.modelos.Transaccion;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import com.sistema.banco.config.MyServerRabbit;
+import com.sistema.banco.servicios.BankApiService;
 
 public class Consumidor {
 
 	private static final String[] BANK_QUEUES = {"BANRURAL", "GYT", "BAC", "BI"};
     private static final ObjectMapper mapper = new ObjectMapper();
-    private static final HttpClient client = HttpClient.newHttpClient();
 
     public static void main(String[] args) throws Exception {
     	
@@ -41,12 +37,20 @@ public class Consumidor {
                     
                     String jsonModificado = mapper.writeValueAsString(tx);
                     
-                    if (postToApi(jsonModificado)) {
+                    if (BankApiService.guardarTransaccion(jsonModificado)) {
                         System.out.println("[OK] Transaccion guardada para Lester: " + tx.idTransaccion);
-                        
                         channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                     } else {
-                        System.err.println("[FALLO] API del ingeniero no respondió 200. El mensaje sigue en RabbitMQ.");
+                        System.err.println("[FALLO] Reintentando en 3 segundos..."); 
+                        
+                        Thread.sleep(2000);
+
+                        if (BankApiService.guardarTransaccion(jsonModificado)) {
+                            System.out.println("[OK] Guardado en segundo intento.");
+                            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+                        } else {
+                            System.err.println("[ERROR] No se pudo procesar. El mensaje permanece en la cola.");
+                        }
                     }
                 } catch (Exception ex) {
                     System.err.println("Error procesando mensaje: " + ex.getMessage());
@@ -58,22 +62,5 @@ public class Consumidor {
         System.out.println("Consumidor esperando mensajes...");
     }
 
-    private static boolean postToApi(String json) {
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://7e0d9ogwzd.execute-api.us-east-1.amazonaws.com/default/guardarTransacciones"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .build();
-            
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            
-            System.out.println("Respuesta del servidor: " + response.statusCode() + " -> " + response.body());
-            
-            return response.statusCode() == 200 || response.statusCode() == 201;
-        } catch (Exception e) {
-            System.err.println("Error de conexión: " + e.getMessage());
-            return false;
-        }
-    } 
+   
 }

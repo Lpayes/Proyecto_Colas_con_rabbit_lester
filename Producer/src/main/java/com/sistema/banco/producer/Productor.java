@@ -1,5 +1,5 @@
 package com.sistema.banco.producer;
-
+import com.sistema.banco.config.MyServerRabbit;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -7,35 +7,21 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
 import com.sistema.banco.modelos.LoteTransacciones;
 import com.sistema.banco.modelos.Transaccion;
-
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import com.sistema.banco.servicios.BankApiService;
 
 public class Productor {
 	public static void main(String[] args) {
 		ConnectionFactory factory = MyServerRabbit.getFactory();
 
-
-        HttpClient client = HttpClient.newHttpClient();
         ObjectMapper mapper = new ObjectMapper();
 
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
-
-            System.out.println("Producer iniciado. Conectado a RabbitMQ como Lester.");
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://hly784ig9d.execute-api.us-east-1.amazonaws.com/default/transacciones"))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        	System.out.println("Producer iniciado. Conectado a RabbitMQ como Lester.");
             
-            if (response.statusCode() == 200) {
-                System.out.println("Status del GET: " + response.statusCode() + " OK");
-            LoteTransacciones lote = mapper.readValue(response.body(), LoteTransacciones.class);
+  
+                LoteTransacciones lote = BankApiService.obtenerTransacciones();
+                System.out.println("Status del GET: 200 OK");
 
             for (Transaccion tx : lote.transacciones) {
                 String bank = tx.bancoDestino.toUpperCase().trim();
@@ -50,10 +36,7 @@ public class Productor {
             }
 
             System.out.println("Proceso terminado. Lote enviado.");
-            
-            } else { 
-                System.err.println("Error en la API. Código recibido: " + response.statusCode());
-            } 
+          
 
         } catch (Exception ex) {
             System.err.println("Error: " + ex.getMessage());
