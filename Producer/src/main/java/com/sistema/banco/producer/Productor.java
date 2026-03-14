@@ -26,13 +26,19 @@ public class Productor {
                 for (Transaccion tx : lote.getTransacciones()) {
             	String bank = tx.getBancoDestino().toUpperCase().trim();
                 
-                channel.queueDeclare(bank, true, false, false, null);
+            	String payload = mapper.writeValueAsString(tx);
 
-                String payload = mapper.writeValueAsString(tx);
-                
-                channel.basicPublish("", bank, MessageProperties.PERSISTENT_TEXT_PLAIN, payload.getBytes());
-
-                System.out.println("Paublicada transacción " + tx.getIdTransaccion() + " en cola: " + bank);
+                if (tx.getMonto() > 4000) {
+                    channel.queueDeclare(bank, true, false, false, null);
+                    channel.basicPublish("", bank, MessageProperties.PERSISTENT_TEXT_PLAIN, payload.getBytes());
+                    System.out.println("ENVIADA AL POST: ID " + tx.getIdTransaccion() + " en cola " + bank);
+                } else {
+                    String queueRechazados = "cola_rechazados";
+                    channel.queueDeclare(queueRechazados, true, false, false, null);
+                    String logRechazo = "ID: " + tx.getIdTransaccion() + " | MONTO: " + tx.getMonto() + " | ESTADO: RECHAZADA";
+                    channel.basicPublish("", queueRechazados, MessageProperties.PERSISTENT_TEXT_PLAIN, logRechazo.getBytes());
+                    System.err.println("ENVIADA A RECHAZADOS: ID " + tx.getIdTransaccion());
+                }
             }
 
             System.out.println("Proceso terminado. Lote enviado.");
