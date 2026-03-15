@@ -32,7 +32,7 @@ Este proyecto es el que está escuchando las colas y hace todo el trabajo de mod
 
 ## Dependencias del Proyecto (Maven)
 Ambos proyectos utilizan estas librerias en el pom.xml para funcionar:
-
+# Enlace del video: https://drive.google.com/file/d/1or5XD91pgQDfv9CvuplkmsMlm9wMt7BM/view?usp=sharing
 ```xml
 <dependencies>
     <dependency>
@@ -60,7 +60,6 @@ Ambos proyectos utilizan estas librerias en el pom.xml para funcionar:
     </dependency>
 </dependencies>
 
-#Enlace del video: https://drive.google.com/file/d/1or5XD91pgQDfv9CvuplkmsMlm9wMt7BM/view?usp=sharing
 
 **Desarrollado por:** Lester David Payes Méndez  
 **Carnet:** 0905-24-22750
